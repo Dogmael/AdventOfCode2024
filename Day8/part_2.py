@@ -64,7 +64,7 @@ def get_antennas_couples(antennas_coordinates: Dict[str, List[Tuple[int, int]]])
 
     return antennas_couples
 
-def get_antinodes_from_couple(antennas_couple: Tuple[Tuple[int, int], Tuple[int, int]]) -> List[Tuple[int, int]]:
+def get_antinodes_from_couple(antennas_couple: Tuple[Tuple[int, int], Tuple[int, int]], map: List[str]) -> List[Tuple[int, int]]:
     """
     Calculate the coordinates of antinodes created by a pair of antennas.
 
@@ -75,19 +75,37 @@ def get_antinodes_from_couple(antennas_couple: Tuple[Tuple[int, int], Tuple[int,
         Example: ((1, 8), (2, 5))
 
     Returns:
-        List[Tuple[int, int]]: A list containing the coordinates of the two antinodes.
+        List[Tuple[int, int]]: A list containing the coordinates of the antinodes.
 
-        Example: [(0, 7), (3, 6)]
+        Example: [(1, 8), (0, 11), (2, 5), (3, 2)]
     """
 
     (x_1, y_1), (x_2, y_2) = antennas_couple # TO REMEMBER: Unpack tuple
 
     vector_1_to_2 = (x_2 - x_1, y_2 - y_1)
 
-    antinode_1 = (x_1 - vector_1_to_2[0], y_1 - vector_1_to_2[1])
-    antinode_2 = (x_2 + vector_1_to_2[0], y_2 + vector_1_to_2[1])
+    antinodes = []
 
-    return [antinode_1, antinode_2]
+    cpt = 0 # DO NOT FORGET TO START FROM 0
+    while True  :
+        antinode_1 = (x_1 - cpt * vector_1_to_2[0], y_1 - cpt * vector_1_to_2[1])
+        if point_is_in_map(antinode_1, map) :
+            antinodes.append(antinode_1)
+            cpt += 1
+        else :
+            break
+
+    cpt = 0
+    while True :
+        antinode_2 = (x_2 + cpt * vector_1_to_2[0], y_2 + cpt * vector_1_to_2[1])
+        if point_is_in_map(antinode_2, map):
+            antinodes.append(antinode_2)
+            cpt += 1
+        else :
+            break
+
+
+    return antinodes
 
 def point_is_in_map(point : Tuple, map: List[str]) -> bool :
     """Check if a point is in map
@@ -98,8 +116,7 @@ def point_is_in_map(point : Tuple, map: List[str]) -> bool :
 
     Returns:
         bool: True if point is in map, False otherwise
-    """
-     
+    """    
     return (point[0] >= 0 and point[0] < len(map)) and (point[1] >= 0 and point[1] < len(map[0])) # DO NOT INCLUDE len(...) in accepted values
 
 def print_antinodes(antinodes: List, map: List[str]) -> None :
@@ -137,12 +154,10 @@ def get_antinodes_total_number(file_name: str) -> int:
 
     for frequency in antennas_couples :
         for couple in antennas_couples[frequency] :
-            antinodes_from_couple = get_antinodes_from_couple(couple)
-            
-            for antinode in antinodes_from_couple :
-                if point_is_in_map(antinode, map) :
-                    antinodes.append(antinode)
-    
+            antinodes_from_couple = get_antinodes_from_couple(couple, map)
+            antinodes += antinodes_from_couple.copy()
+
     return len(set(antinodes)) # WARNING: We need to remove duplicates
 
 print(get_antinodes_total_number('input.txt'))
+
